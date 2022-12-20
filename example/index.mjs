@@ -1,5 +1,5 @@
 import { define, getHandler } from '@pearba/suki.serverless';
-const __dirname = new URL('.', import.meta.url).pathname.slice(0, -1);
+//const __dirname = new URL('.', import.meta.url).pathname.slice(0, -1);
 
 //please aware that the www_default directory (which located in npm package) will be replaced if you specific * in web_root_for_suki_js
 define({
