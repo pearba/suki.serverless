@@ -1,0 +1,1 @@
+R.setContentType('text/plain').flush(null, 'suki.serverless now works :)\nplease aware that the www_default directory (which located in npm package) will be replaced if you specific * in web_root_for_suki_js')

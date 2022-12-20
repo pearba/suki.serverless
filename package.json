@@ -1,0 +1,26 @@
+{
+  "name": "@pearba/suki.serverless",
+  "version": "1.0.0",
+  "description": "Make suki.js capable in cloud for serverless.",
+  "main": "serverless.js",
+  "dependencies": {
+    "@pearba/suki.js": "^1.0.0"
+  },
+  "types": "types",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/pearba/suki.serverless"
+  },
+  "keywords": [
+    "server"
+  ],
+  "author": "pearba",
+  "license": "CC0-1.0",
+  "bugs": {
+    "url": "https://github.com/pearba/suki.serverless/issues"
+  },
+  "homepage": "https://github.com/pearba/suki.serverless#readme"
+}

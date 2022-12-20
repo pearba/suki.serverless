@@ -1,0 +1,1 @@
+R.error('Sorry but suki.serverless seems being unable to handle the requests anymore (the platform api may be changed?) .')
