@@ -1,7 +1,7 @@
 {
   "name": "@pearba/suki.serverless",
   "version": "1.0.0",
-  "description": "Make suki.js capable in cloud for serverless.",
+  "description": "The cloud serverless support (aws|azure|gcp/google cloud) for suki.js.",
   "main": "serverless.js",
   "dependencies": {
     "@pearba/suki.js": "^1.0.0"
