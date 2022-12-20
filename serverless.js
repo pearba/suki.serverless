@@ -1,4 +1,4 @@
-var option, convert_env, handler, default_page;
+var option, convert_env, handler;
 
 const valid_platform = {
 	'gcp': true,
