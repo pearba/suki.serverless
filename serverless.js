@@ -37,7 +37,7 @@ exports.define = function (opt) {
 
 exports.getHandler = () => handler;
 
-function selectHandler(opt) {
+function selectHandler(mode) {
 	async function handler_mode_aws(event) {
 		var response_data = await suki.sync(serverless.handle)(convert_env(event))
 		,	response
