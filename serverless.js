@@ -39,7 +39,7 @@ exports.getHandler = () => handler;
 
 function selectHandler(mode) {
 	async function handler_mode_aws(event) {
-		var response_data = await suki.sync(serverless.handle)(convert_env(event))
+		var response_data = await suki.sync(suki.serverless.handle)(convert_env(event))
 		,	response
 		;
 		if (response_data) {
@@ -64,7 +64,7 @@ function selectHandler(mode) {
 
 	}
 	async function handler_mode_gcp(req, res) {
-		var response_data = await suki.sync(serverless.handle)(convert_env(req));
+		var response_data = await suki.sync(suki.serverless.handle)(convert_env(req));
 		if (response_data) {
 			res.setHeader('Content-Type', response_data.contentType);
 			response_data.cookies && res.setHeader('Set-Cookie', response_data.cookies.map(cookie => cookie.replace('Set-Cookie: ', '').slice(0, -1)));
