@@ -21,7 +21,7 @@ exports.define = function (opt) {
 				webRoot[n] = opt.web_root_for_suki_js[n];
 			}
 		}
-		//converter
+		//converter: map resources
 		convert_env = selectEnvConverter(opt.platform);
 		//converter
 		handler = selectHandler(opt.platform);
@@ -86,7 +86,7 @@ function selectHandler(mode) {
 function selectEnvConverter(mode) {
 	function convert_serverless_env_mode_aws(evt) {
 		return {
-			real_url: evt.queryStringParameters && evt.queryStringParameters[option.real_url_param] || default_page,
+			real_url: evt.queryStringParameters && encodeURI(evt.queryStringParameters[option.real_url_param]) || default_page,
 			method: evt.requestContext.http.method.toUpperCase(),
 			headers: evt.headers,
 			post_json: evt.body || ''
@@ -97,7 +97,7 @@ function selectEnvConverter(mode) {
 	}
 	function convert_serverless_env_mode_gcp(req) {
 		return {
-			real_url: req.query && req.query[option.real_url_param] || default_page,
+			real_url: req.query && encodeURI(req.query[option.real_url_param]) || default_page,
 			method: req.method.toUpperCase(),
 			headers: req.headers,
 			post_json: req.body ? JSON.stringify(req.body) : ''
