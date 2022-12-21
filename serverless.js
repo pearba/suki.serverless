@@ -86,7 +86,8 @@ function selectHandler(mode) {
 function selectEnvConverter(mode) {
 	function convert_serverless_env_mode_aws(evt) {
 		return {
-			real_url: evt.queryStringParameters && encodeURI(evt.queryStringParameters[option.real_url_param]) || default_page,
+			real_url: evt.queryStringParameters && encodeURI(evt.queryStringParameters[option.query_param_for_real_url]) || default_page,
+			real_host: option.alias_header_for_real_host ? evt.headers[option.alias_header_for_real_host] : '',
 			method: evt.requestContext.http.method.toUpperCase(),
 			headers: evt.headers,
 			post_json: evt.body || ''
@@ -97,7 +98,8 @@ function selectEnvConverter(mode) {
 	}
 	function convert_serverless_env_mode_gcp(req) {
 		return {
-			real_url: req.query && encodeURI(req.query[option.real_url_param]) || default_page,
+			real_url: req.query && encodeURI(req.query[option.query_param_for_real_url]) || default_page,
+			real_host: option.alias_header_for_real_host ? evt.headers[option.alias_header_for_real_host] : '',
 			method: req.method.toUpperCase(),
 			headers: req.headers,
 			post_json: req.body ? JSON.stringify(req.body) : ''
@@ -115,10 +117,7 @@ function selectEnvConverter(mode) {
 		try {
 			return converter(env);
 		} catch {
-			return {
-				headers: { [option.alias_header_for_real_host]: '*' },
-				real_url: default_error_page_platform_api_maybe_changed,
-			};
+			return { real_url: default_error_page_platform_api_maybe_changed };
 		}
 	};
 }
