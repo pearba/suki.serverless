@@ -78,7 +78,7 @@ function selectEnvConverter(mode) {
 		var real_url = combineURL(req.query);
 		return {
 			url: real_url || default_page,
-			host: option.alias_header_for_real_host ? evt.headers[option.alias_header_for_real_host] : '*',
+			host: option.alias_header_for_real_host ? req.headers[option.alias_header_for_real_host] : '*',
 			method: req.method.toUpperCase(),
 			headers: req.headers,
 			body: req.body ? JSON.stringify(req.body) : null
