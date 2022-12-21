@@ -1,42 +1,3 @@
-var option, convert_env, handler;
-
-const valid_platform = {
-	'gcp': true,
-	'aws': true,
-	'azure': true,
-};
-
-const path = require('path');
-const default_page = '/index';
-const default_error_page_platform_api_maybe_changed = '/error_platform_api_maybe_changed';
-const www_default = path.resolve(__dirname, 'www_default');
-
-exports.define = function (opt) {
-	if (valid_platform[opt.platform]) {
-		let webRoot = {'*': www_default};
-		option = opt;
-		//webRoot
-		if (opt.web_root_for_suki_js) {
-			for (let n in opt.web_root_for_suki_js) {
-				webRoot[n] = opt.web_root_for_suki_js[n];
-			}
-		}
-		//converter: map resources
-		convert_env = selectEnvConverter(opt.platform);
-		//converter
-		handler = selectHandler(opt.platform);
-		//init suki once
-		if ('undefined' === typeof suki) {
-			let suki = require('@pearba/suki.js');
-			suki.init(suki.serverless({ webRoot, aliasHostHeader: opt.alias_header_for_real_host }));
-		}
-	} else {
-		console.error('suki.serverless define error: unsupported platform.');
-	}
-};
-
-exports.getHandler = () => handler;
-
 function selectHandler(mode) {
 	async function handler_mode_aws(event) {
 		var response_data = await suki.sync(suki.serverless.handle)(convert_env(event))
@@ -84,25 +45,43 @@ function selectHandler(mode) {
 }
 
 function selectEnvConverter(mode) {
+	function combineURL(query) {
+		var param = option.query_param_for_real_path, real_url;
+		if (query && path_validation.test(real_url=query[param]||'')) {
+			let querystring = '?';
+			for (let n in query) {
+				switch (n) {
+					case param:
+						continue;
+					default:
+						querystring += n + '=' + query[n] + '&';
+				}
+			}
+			1 !== querystring.length && (real_url += querystring.slice(0, -1));
+		}
+		return real_url;
+	}
 	function convert_serverless_env_mode_aws(evt) {
+		var real_url = combineURL(evt.queryStringParameters);
 		return {
-			real_url: evt.queryStringParameters && encodeURI(evt.queryStringParameters[option.query_param_for_real_url]) || default_page,
-			real_host: option.alias_header_for_real_host ? evt.headers[option.alias_header_for_real_host] : '',
+			url: real_url || default_page,
+			host: option.alias_header_for_real_host ? evt.headers[option.alias_header_for_real_host] : '*',
 			method: evt.requestContext.http.method.toUpperCase(),
 			headers: evt.headers,
-			post_json: evt.body || ''
+			body: evt.body || null
 		};
 	}
 	function convert_serverless_env_mode_azure(foo) {
 		return null;
 	}
 	function convert_serverless_env_mode_gcp(req) {
+		var real_url = combineURL(req.query);
 		return {
-			real_url: req.query && encodeURI(req.query[option.query_param_for_real_url]) || default_page,
-			real_host: option.alias_header_for_real_host ? evt.headers[option.alias_header_for_real_host] : '',
+			url: real_url || default_page,
+			host: option.alias_header_for_real_host ? evt.headers[option.alias_header_for_real_host] : '*',
 			method: req.method.toUpperCase(),
 			headers: req.headers,
-			post_json: req.body ? JSON.stringify(req.body) : ''
+			body: req.body ? JSON.stringify(req.body) : null
 		};
 	}
 	var converter;
@@ -117,7 +96,48 @@ function selectEnvConverter(mode) {
 		try {
 			return converter(env);
 		} catch {
-			return { real_url: default_error_page_platform_api_maybe_changed };
+			return { url: default_error_page_platform_api_maybe_changed };
 		}
 	};
 }
+
+const valid_platform = {
+	'gcp': true,
+	'aws': true,
+	'azure': true,
+};
+const path = require('path');
+const default_page = '/index';
+const default_error_page_platform_api_maybe_changed = '/error_platform_api_maybe_changed';
+const www_default = path.resolve(__dirname, 'www_default');
+const default_path_validation = /^\/[0-9a-zA-Z\-\.]*$/;
+
+var path_validation = default_path_validation, option, convert_env, handler;
+
+exports.setPathValidation = regex => {path_validation = regex};
+
+exports.define = function (opt) {
+	if (valid_platform[opt.platform]) {
+		let webRoot = {'*': www_default};
+		option = opt;
+		//webRoot
+		if (opt.web_root_for_suki_js) {
+			for (let n in opt.web_root_for_suki_js) {
+				webRoot[n] = opt.web_root_for_suki_js[n];
+			}
+		}
+		//converter: map resources
+		convert_env = selectEnvConverter(opt.platform);
+		//converter
+		handler = selectHandler(opt.platform);
+		//init suki once
+		if ('undefined' === typeof suki) {
+			let suki = require('@pearba/suki.js');
+			suki.init(suki.serverless({ webRoot, aliasHostHeader: opt.alias_header_for_real_host }));
+		}
+	} else {
+		console.error('suki.serverless define error: unsupported platform.');
+	}
+};
+
+exports.getAsyncHandler = () => handler;
