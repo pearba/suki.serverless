@@ -21,8 +21,31 @@ function selectHandler(mode) {
 		}
 		return response;
 	}
-	async function handler_mode_azure() {
-
+	async function handler_mode_azure(context, req) {
+		var response_data = await suki.sync(suki.serverless.handle)(convert_env(req));
+		if (response_data) {
+			let headers = {
+				'Content-Type': response_data.contentType
+			};
+			if (response_data.cookies) {
+				let cookie_header = 'Set-Cookie', cookie;
+				for (cookie of response_data.cookies) {
+					headers[cookie_header] = cookie.replace('Set-Cookie: ', '').slice(0, -1);
+					cookie_header += ' ';
+				}
+			}
+			context.res = {
+				status: response_data.statusCode,
+				body:  response_data.content,
+				headers
+			};
+		} else {
+			context.res = {
+				status: 403,
+				body:  'Invalid request.'
+			};
+		}
+		return true;
 	}
 	async function handler_mode_gcp(req, res) {
 		var response_data = await suki.sync(suki.serverless.handle)(convert_env(req));
@@ -71,8 +94,15 @@ function selectEnvConverter(mode) {
 			body: evt.body || null
 		};
 	}
-	function convert_serverless_env_mode_azure(foo) {
-		return null;
+	function convert_serverless_env_mode_azure(req) {
+		var real_url = combineURL(req.query);
+		return {
+			url: real_url || default_page,
+			host: option.alias_header_for_real_host ? req.headers[option.alias_header_for_real_host] : '*',
+			method: req.method.toUpperCase(),
+			headers: req.headers,
+			body: req.body ? JSON.stringify(req.body) : null
+		};
 	}
 	function convert_serverless_env_mode_gcp(req) {
 		var real_url = combineURL(req.query);
