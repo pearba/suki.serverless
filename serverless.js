@@ -1,11 +1,12 @@
 function selectHandler(mode) {
 	async function handler_mode_aws(event) {
 		var response_data = await suki.sync(suki.serverless.handle)(convert_env(event))
+		,	x_suki = response_data.x_suki.split(':')
 		,	response
 		;
 		if (response_data) {
 			response = {
-				headers: { 'content-type': response_data.contentType },
+				headers: { 'content-type': response_data.contentType, [x_suki[0]]: x_suki[1].trimLeft() },
 				statusCode: response_data.statusCode,
 				body: response_data.content,
 			};
@@ -22,10 +23,13 @@ function selectHandler(mode) {
 		return response;
 	}
 	async function handler_mode_azure(context, req) {
-		var response_data = await suki.sync(suki.serverless.handle)(convert_env(req));
+		var response_data = await suki.sync(suki.serverless.handle)(convert_env(req))
+		,	x_suki = response_data.x_suki.split(':')
+		;
 		if (response_data) {
 			let headers = {
-				'Content-Type': response_data.contentType
+				'Content-Type': response_data.contentType,
+				[x_suki[0]]: x_suki[1].trimLeft()
 			};
 			if (response_data.cookies) {
 				let cookie_header = 'Set-Cookie', cookie;
@@ -48,9 +52,12 @@ function selectHandler(mode) {
 		return true;
 	}
 	async function handler_mode_gcp(req, res) {
-		var response_data = await suki.sync(suki.serverless.handle)(convert_env(req));
+		var response_data = await suki.sync(suki.serverless.handle)(convert_env(req))
+		,	x_suki = response_data.x_suki.split(':')
+		;
 		if (response_data) {
 			res.setHeader('Content-Type', response_data.contentType);
+			res.setHeader(x_suki[0], x_suki[1].trimLeft());
 			response_data.cookies && res.setHeader('Set-Cookie', response_data.cookies.map(cookie => cookie.replace('Set-Cookie: ', '').slice(0, -1)));
 			res.status(response_data.statusCode).send(response_data.content);
 		} else {
@@ -163,6 +170,7 @@ exports.define = function (opt) {
 		//init suki once
 		if ('undefined' === typeof suki) {
 			let suki = require('@pearba/suki.js');
+			opt.suki_id && (suki.id = opt.suki_id);
 			suki.init(suki.serverless({ webRoot, aliasHostHeader: opt.alias_header_for_real_host }));
 		}
 	} else {

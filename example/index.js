@@ -9,6 +9,7 @@ define({
 	web_root_for_suki_js: {
 		'example.com': path.resolve(__dirname, '/www_root_example_com')
 	},
+	suki_id: 'aws-lambda-1' //used by suki.js x-suki response header, help to identify which function/platform and show info for x-suki itself
 });
 
 let handler = getAsyncHandler();
