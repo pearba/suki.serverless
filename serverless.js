@@ -171,7 +171,7 @@ exports.define = function (opt) {
 		if ('undefined' === typeof suki) {
 			let suki = require('@pearba/suki.js');
 			opt.suki_id && (suki.id = opt.suki_id);
-			suki.init(suki.serverless({ webRoot, aliasHostHeader: opt.alias_header_for_real_host }));
+			suki.init(suki.serverless({ webRoot, hotCodeDelaySeconds: opt.delay_seconds_for_hot_code, aliasHostHeader: opt.alias_header_for_real_host }));
 		}
 	} else {
 		console.error('suki.serverless define error: unsupported platform.');
