@@ -24,7 +24,7 @@ function selectHandler(mode)
 		else
 		{
 			response = {
-				statusCode: 403,
+				statusCode: 500,
 				body: 'Invalid request.',
 			};
 		}
@@ -64,7 +64,7 @@ function selectHandler(mode)
 		else
 		{
 			context.res = {
-				status: 403,
+				status: 500,
 				body:  'Invalid request.'
 			};
 		}
@@ -87,7 +87,7 @@ function selectHandler(mode)
 		}
 		else
 		{
-			res.status(403).send('Invalid request.');
+			res.status(500).send('Invalid request.');
 		}
 		return true;
 	}
