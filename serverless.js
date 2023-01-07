@@ -1,20 +1,28 @@
-function selectHandler(mode) {
-	async function handler_mode_aws(event) {
+function selectHandler(mode)
+{
+	async function handler_mode_aws(event)
+	{
 		var response_data = await suki.sync(suki.serverless.handle)(convert_env(event))
-		,	x_suki = response_data.x_suki.split(':')
-		,	response
+		,	response, headers, multiValueHeaders, hv
 		;
-		if (response_data) {
+		if (response_data)
+		{
+			headers = { 'Content-Type': response_data.contentType };
+			multiValueHeaders = {};
+			for (let header in response_data.headers)
+			{
+				hv = response_data.headers[header];
+				1===hv.length ? (headers[header] = hv[0]) : (multiValueHeaders[header] = hv);
+			}
 			response = {
-				headers: { 'content-type': response_data.contentType, [x_suki[0]]: x_suki[1].trimLeft() },
+				headers,
+				multiValueHeaders,
 				statusCode: response_data.statusCode,
 				body: response_data.content,
 			};
-			if (response_data.cookies) {
-				response.multiValueHeaders = {};
-				response.multiValueHeaders['Set-Cookie'] = response_data.cookies.map(cookie => cookie.replace('Set-Cookie: ', '').slice(0, -1));
-			}
-		} else {
+		}
+		else
+		{
 			response = {
 				statusCode: 403,
 				body: 'Invalid request.',
@@ -22,20 +30,29 @@ function selectHandler(mode) {
 		}
 		return response;
 	}
-	async function handler_mode_azure(context, req) {
+	async function handler_mode_azure(context, req)
+	{
 		var response_data = await suki.sync(suki.serverless.handle)(convert_env(req))
-		,	x_suki = response_data.x_suki.split(':')
+		,	headers, hv, h
 		;
-		if (response_data) {
-			let headers = {
-				'Content-Type': response_data.contentType,
-				[x_suki[0]]: x_suki[1].trimLeft()
-			};
-			if (response_data.cookies) {
-				let cookie_header = 'Set-Cookie', cookie;
-				for (cookie of response_data.cookies) {
-					headers[cookie_header] = cookie.replace('Set-Cookie: ', '').slice(0, -1);
-					cookie_header += ' ';
+		if (response_data)
+		{
+			headers = { 'Content-Type': response_data.contentType };
+			for (let header in response_data.headers)
+			{
+				hv = response_data.headers[header];
+				if (1 === hv.length)
+				{
+					headers[header] = hv[0];
+				}
+				else
+				{
+					h = header;
+					for (let v of hv)
+					{
+						headers[h] = v;
+						h += ' ';
+					}
 				}
 			}
 			context.res = {
@@ -43,7 +60,9 @@ function selectHandler(mode) {
 				body:  response_data.content,
 				headers
 			};
-		} else {
+		}
+		else
+		{
 			context.res = {
 				status: 403,
 				body:  'Invalid request.'
@@ -51,36 +70,53 @@ function selectHandler(mode) {
 		}
 		return true;
 	}
-	async function handler_mode_gcp(req, res) {
+	async function handler_mode_gcp(req, res)
+	{
 		var response_data = await suki.sync(suki.serverless.handle)(convert_env(req))
-		,	x_suki = response_data.x_suki.split(':')
+		,	hv
 		;
-		if (response_data) {
+		if (response_data)
+		{
 			res.setHeader('Content-Type', response_data.contentType);
-			res.setHeader(x_suki[0], x_suki[1].trimLeft());
-			response_data.cookies && res.setHeader('Set-Cookie', response_data.cookies.map(cookie => cookie.replace('Set-Cookie: ', '').slice(0, -1)));
+			for (let header in response_data.headers)
+			{
+				hv = response_data.headers[header];
+				res.setHeader(header, 1===hv.length ? hv[0] : hv);
+			}
 			res.status(response_data.statusCode).send(response_data.content);
-		} else {
+		}
+		else
+		{
 			res.status(403).send('Invalid request.');
 		}
 		return true;
 	}
-	if ('aws' === mode) {
+	if ('aws' === mode)
+	{
 		return handler_mode_aws;
-	} else if ('azure' === mode) {
+	}
+	else if ('azure' === mode)
+	{
 		return handler_mode_azure;
-	} else if ('gcp' === mode) {
+	}
+	else if ('gcp' === mode)
+	{
 		return handler_mode_gcp;
 	}
 }
 
-function selectEnvConverter(mode) {
-	function combineURL(query) {
+function selectEnvConverter(mode)
+{
+	function combineURL(query)
+	{
 		var param = option.query_param_for_real_path, real_url;
-		if (query && path_validation.test(real_url=query[param]||'')) {
+		if (query && path_validation.test(real_url=query[param]||''))
+		{
 			let querystring = '?';
-			for (let n in query) {
-				switch (n) {
+			for (let n in query)
+			{
+				switch (n)
+				{
 					case param:
 						continue;
 					default:
@@ -91,7 +127,8 @@ function selectEnvConverter(mode) {
 		}
 		return real_url;
 	}
-	function convert_serverless_env_mode_aws(evt) {
+	function convert_serverless_env_mode_aws(evt)
+	{
 		var real_url = combineURL(evt.queryStringParameters);
 		return {
 			url: real_url || default_page,
@@ -101,7 +138,8 @@ function selectEnvConverter(mode) {
 			body: evt.body || null
 		};
 	}
-	function convert_serverless_env_mode_azure(req) {
+	function convert_serverless_env_mode_azure(req)
+	{
 		var real_url = combineURL(req.query);
 		return {
 			url: real_url || default_page,
@@ -111,7 +149,8 @@ function selectEnvConverter(mode) {
 			body: req.body ? JSON.stringify(req.body) : null
 		};
 	}
-	function convert_serverless_env_mode_gcp(req) {
+	function convert_serverless_env_mode_gcp(req)
+	{
 		var real_url = combineURL(req.query);
 		return {
 			url: real_url || default_page,
@@ -122,17 +161,25 @@ function selectEnvConverter(mode) {
 		};
 	}
 	var converter;
-	if ('aws' === mode) {
+	if ('aws' === mode)
+	{
 		converter = convert_serverless_env_mode_aws;
-	} else if ('azure' === mode) {
+	}
+	else if ('azure' === mode)
+	{
 		converter = convert_serverless_env_mode_azure;
-	} else if ('gcp' === mode) {
+	}
+	else if ('gcp' === mode)
+	{
 		converter = convert_serverless_env_mode_gcp;
 	}
 	return env => {
-		try {
+		try
+		{
 			return converter(env);
-		} catch {
+		}
+		catch
+		{
 			return { url: default_error_page_platform_api_maybe_changed };
 		}
 	};
@@ -151,15 +198,19 @@ const default_path_validation = /^\/[0-9a-zA-Z\-\.]*$/;
 
 var path_validation = default_path_validation, option, convert_env, handler;
 
-exports.setPathValidation = regex => {path_validation = regex};
+exports.setPathValidation = regex => { path_validation = regex };
 
-exports.define = function (opt) {
-	if (valid_platform[opt.platform]) {
+exports.define = function (opt)
+{
+	if (valid_platform[opt.platform])
+	{
 		let webRoot = {'*': www_default};
 		option = opt;
 		//webRoot
-		if (opt.web_root_for_suki_js) {
-			for (let n in opt.web_root_for_suki_js) {
+		if (opt.web_root_for_suki_js)
+		{
+			for (let n in opt.web_root_for_suki_js)
+			{
 				webRoot[n] = opt.web_root_for_suki_js[n];
 			}
 		}
@@ -167,13 +218,16 @@ exports.define = function (opt) {
 		convert_env = selectEnvConverter(opt.platform);
 		//converter
 		handler = selectHandler(opt.platform);
-		//init suki once
-		if ('undefined' === typeof suki) {
+		//init suki
+		if ('undefined' === typeof suki)
+		{
 			let suki = require('@pearba/suki.js');
 			opt.suki_id && (suki.id = opt.suki_id);
 			suki.init(suki.serverless({ webRoot, hotCodeDelaySeconds: opt.delay_seconds_for_hot_code, aliasHostHeader: opt.alias_header_for_real_host }));
 		}
-	} else {
+	}
+	else
+	{
 		console.error('suki.serverless define error: unsupported platform.');
 	}
 };
