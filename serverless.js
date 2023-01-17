@@ -107,29 +107,20 @@ function selectHandler(mode)
 
 function selectEnvConverter(mode)
 {
-	function combineURL(query)
+	function combineURL(query, url)
 	{
 		var param = option.query_param_for_real_path, real_url;
-		if (query && path_validation.test(real_url=query[param]||''))
+		if (query && path_validation.test(real_url=query[param]?.split(',')[0] ?? ''))
 		{
-			let querystring = '?';
-			for (let n in query)
-			{
-				switch (n)
-				{
-					case param:
-						continue;
-					default:
-						querystring += n + '=' + query[n] + '&';
-				}
-			}
-			1 !== querystring.length && (real_url += querystring.slice(0, -1));
+			let querystring = url.substring(url.indexOf('?'));
+			querystring = querystring.replace(param+'='+real_url, '').replace(param+'='+encodeURIComponent(real_url), '').replace('&&', '&').replace('?&', '?');
+			1 !== querystring.length && (real_url += querystring);
 		}
 		return real_url;
 	}
 	function convert_serverless_env_mode_aws(evt)
 	{
-		var real_url = combineURL(evt.queryStringParameters);
+		var real_url = combineURL(evt.queryStringParameters, evt.rawPath+'?'+evt.rawQueryString);
 		return {
 			url: real_url || default_page,
 			host: option.alias_header_for_real_host ? evt.headers[option.alias_header_for_real_host] : '*',
@@ -140,7 +131,7 @@ function selectEnvConverter(mode)
 	}
 	function convert_serverless_env_mode_azure(req)
 	{
-		var real_url = combineURL(req.query);
+		var real_url = combineURL(req.query, req.originalUrl);
 		return {
 			url: real_url || default_page,
 			host: option.alias_header_for_real_host ? req.headers[option.alias_header_for_real_host] : '*',
@@ -151,7 +142,7 @@ function selectEnvConverter(mode)
 	}
 	function convert_serverless_env_mode_gcp(req)
 	{
-		var real_url = combineURL(req.query);
+		var real_url = combineURL(req.query, req.originalUrl);
 		return {
 			url: real_url || default_page,
 			host: option.alias_header_for_real_host ? req.headers[option.alias_header_for_real_host] : '*',
