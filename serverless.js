@@ -126,7 +126,7 @@ function selectEnvConverter(mode)
 			host: option.alias_header_for_real_host ? evt.headers[option.alias_header_for_real_host] : '*',
 			method: evt.requestContext.http.method.toUpperCase(),
 			headers: evt.headers,
-			body: evt.body || null
+			body: evt.body ? (evt.isBase64Encoded ? suki.base64.decode(evt.body) : evt.body) : null
 		};
 	}
 	function convert_serverless_env_mode_azure(req)
@@ -137,7 +137,7 @@ function selectEnvConverter(mode)
 			host: option.alias_header_for_real_host ? req.headers[option.alias_header_for_real_host] : '*',
 			method: req.method.toUpperCase(),
 			headers: req.headers,
-			body: req.body ? JSON.stringify(req.body) : null
+			body: req.body ? req.rawBody : null
 		};
 	}
 	function convert_serverless_env_mode_gcp(req)
