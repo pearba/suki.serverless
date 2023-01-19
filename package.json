@@ -1,11 +1,12 @@
 {
   "name": "@pearba/suki.serverless",
-  "version": "1.0.19",
+  "version": "2.0.20",
   "description": "The cloud serverless support (aws|azure|gcp/google cloud) for suki.js. ~2.0.0 for stable and ~1.0.0 for lastest",
   "main": "serverless.js",
   "dependencies": {
-    "@pearba/suki.js": "~1.0.0"
+    "@pearba/suki.js": "~2.0.0"
   },
+  "engines": { "node": ">=18" },
   "types": "types",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
